@@ -291,7 +291,16 @@ def compare_models(models_dict, X_test, y_test):
     #   1. Loop through models_dict
     #   2. Call evaluate_model for each
     #   3. Collect results into a DataFrame
-    raise NotImplementedError("Implement compare_models()")
+    for name, model in models_dict.items():
+        metrics = evaluate_model(model, X_test, y_test)
+        metrics['model'] = name
+        if 'results' not in locals():
+            results = pd.DataFrame([metrics])
+        else:
+            results = results.append(metrics, ignore_index=True)
+    results.set_index('model', inplace=True)
+    return results
+  
 
 
 def cross_validate_model(model, X, y, cv=5, scoring='neg_mean_squared_error'):
