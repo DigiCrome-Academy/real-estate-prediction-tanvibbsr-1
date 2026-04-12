@@ -36,7 +36,12 @@ def load_housing_data():
     #   1. Use fetch_california_housing(as_frame=True)
     #   2. The target variable should be named 'MedHouseVal'
     #   3. Return a single DataFrame with features AND target combined
-    raise NotImplementedError("Implement load_housing_data()")
+
+    data = fetch_california_housing(as_frame=True)
+    df = data.frame
+    df.rename(columns={'MedHouseVal': 'MedHouseVal'}, inplace=True)  # Ensure target column is named correctly
+    return df
+    
 
 
 def preprocess_features(df, target_col='MedHouseVal'):
