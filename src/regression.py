@@ -156,7 +156,8 @@ def build_decision_tree(X_train, y_train, max_depth=10, random_state=42):
         DecisionTreeRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_decision_tree()")
+    model = DecisionTreeRegressor(max_depth=max_depth, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_random_forest(X_train, y_train, n_estimators=100, max_depth=None, random_state=42):
@@ -174,7 +175,8 @@ def build_random_forest(X_train, y_train, n_estimators=100, max_depth=None, rand
         RandomForestRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_random_forest()")
+    model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_gradient_boosting(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -192,7 +194,8 @@ def build_gradient_boosting(X_train, y_train, n_estimators=100, learning_rate=0.
         GradientBoostingRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_gradient_boosting()")
+    model = GradientBoostingRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_xgboost(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -211,7 +214,9 @@ def build_xgboost(X_train, y_train, n_estimators=100, learning_rate=0.1, random_
     """
     # TODO: Implement this function
     # Hint: import xgboost as xgb; use xgb.XGBRegressor
-    raise NotImplementedError("Implement build_xgboost()")
+    import xgboost as xgb
+    model = xgb.XGBRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_lightgbm(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -230,7 +235,9 @@ def build_lightgbm(X_train, y_train, n_estimators=100, learning_rate=0.1, random
     """
     # TODO: Implement this function
     # Hint: import lightgbm as lgb; use lgb.LGBMRegressor(verbose=-1)
-    raise NotImplementedError("Implement build_lightgbm()")
+    import lightgbm as lgb
+    model = lgb.LGBMRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state, verbose=-1).fit(X_train, y_train)
+    return model
 
 
 # =============================================================================
