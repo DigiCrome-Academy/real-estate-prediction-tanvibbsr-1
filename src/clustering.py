@@ -55,11 +55,20 @@ def find_optimal_k(X, k_range=range(2, 11), random_state=42):
     #   1. For each k in k_range, fit KMeans and record inertia_
     #   2. Compute silhouette_score for each clustering
     #   3. Find the k with the highest silhouette score
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+
+    inertias = []
+    silhouette_scores = []
+
     for k in k_range:
-        pass  # Replace with actual implementation
-    silhouette_scores = []  # Replace with actual silhouette scores
-    inertias = []  # Replace with actual inertia values
-    best_k_silhouette = None  # Replace with actual best k based on silhouette
+        kmeans = KMeans(n_clusters=k, random_state=random_state)
+        labels = kmeans.fit_predict(X)
+        inertias.append(kmeans.inertia_)
+        silhouette_scores.append(silhouette_score(X, labels))
+
+    best_k_silhouette = list(k_range)[silhouette_scores.index(max(silhouette_scores))]
+
     return {
         'inertias': inertias,
         'silhouette_scores': silhouette_scores,
