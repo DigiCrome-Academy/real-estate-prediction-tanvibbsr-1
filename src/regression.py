@@ -312,25 +312,22 @@ def compare_models(models_dict, X_test, y_test):
     #   1. Loop through models_dict
     #   2. Call evaluate_model for each
     #   3. Collect results into a DataFrame
-    results_list = []
+    from src.regression import evaluate_model
+    import pandas as pd
 
-    for name, model in models_dict.items():
-        y_pred = model.predict(X_test)
+    results = []
+    for model_name, model_or_tuple in models_dict.items():
+        if isinstance(model_or_tuple, tuple):
+            model, X = model_or_tuple
+        else:
+            model, X = model_or_tuple, X_test
+        
+        metrics = evaluate_model(model, X, y_test)
+        metrics['model'] = model_name
+        results.append(metrics)
+    
+    return pd.DataFrame(results).set_index('model')
 
-        mse = mean_squared_error(y_test, y_pred)
-
-        metrics = {
-            'model': name,
-            'R2': r2_score(y_test, y_pred),
-            'RMSE': mse ** 0.5
-        }
-
-        results_list.append(metrics)
-
-    results = pd.DataFrame(results_list)
-    results.set_index('model', inplace=True)
-
-    return results
   
 
 
@@ -362,4 +359,10 @@ def cross_validate_model(model, X, y, cv=5, scoring='neg_mean_squared_error'):
     # Hints:
     #   1. Use cross_val_score from sklearn
     #   2. Return mean, std, and all individual fold scores
-    raise NotImplementedError("Implement cross_validate_model()")
+    scores = cross_val_score(model, X, y, cv=cv, scoring=scoring)
+    return {
+        'mean_score': np.mean(scores),
+        'std_score': np.std(scores),
+        'scores': scores
+    }
+
