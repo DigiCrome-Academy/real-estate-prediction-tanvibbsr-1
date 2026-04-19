@@ -319,7 +319,18 @@ def perform_pca(X, n_components=None):
     #   1. Fit PCA with n_components
     #   2. Transform X
     #   3. Return explained_variance_ratio_ and its cumulative sum
-    raise NotImplementedError("Implement perform_pca()")
+    pca = PCA(n_components=n_components)
+    transformed = pca.fit_transform(X)
+    explained_variance_ratio = pca.explained_variance_ratio_
+    cumulative_variance = np.cumsum(explained_variance_ratio)
+    return {
+        'model': pca,
+        'transformed': transformed, 
+        'explained_variance_ratio': explained_variance_ratio,
+        'cumulative_variance': cumulative_variance,
+        'n_components': pca.n_components_
+    }
+
 
 
 def find_optimal_components(X, variance_threshold=0.95):
@@ -345,7 +356,12 @@ def find_optimal_components(X, variance_threshold=0.95):
     #   1. Fit PCA with all components
     #   2. Compute cumulative variance
     #   3. Find the first index where cumulative variance >= threshold
-    raise NotImplementedError("Implement find_optimal_components()")
+    pca = PCA()
+    pca.fit(X)
+    cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
+    n_components = np.argmax(cumulative_variance >= variance_threshold) + 1
+    return n_components
+
 
 
 def cluster_with_pca(X, n_clusters, n_components=2, random_state=42):
@@ -377,4 +393,14 @@ def cluster_with_pca(X, n_clusters, n_components=2, random_state=42):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement cluster_with_pca()")
+    pca_result = perform_pca(X, n_components=n_components)
+    pca_data = pca_result['transformed']
+    kmeans_result = perform_kmeans(pca_data, n_clusters=n_clusters, random_state=random_state)
+    return {
+        'pca_model': pca_result['model'],
+        'kmeans_model': kmeans_result['model'],
+        'pca_data': pca_data,
+        'labels': kmeans_result['labels'],
+        'silhouette': kmeans_result['silhouette']
+    }
+
