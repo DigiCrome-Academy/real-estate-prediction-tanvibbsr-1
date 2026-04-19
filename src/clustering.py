@@ -152,7 +152,17 @@ def perform_hierarchical_clustering(X, n_clusters, linkage_method='ward'):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement perform_hierarchical_clustering()")
+    from sklearn.cluster import AgglomerativeClustering
+    from sklearn.metrics import silhouette_score
+    model = AgglomerativeClustering(n_clusters=n_clusters, linkage=linkage_method)
+    labels = model.fit_predict(X)
+    silhouette = silhouette_score(X, labels)
+    return {
+        'model': model,
+        'labels': labels,
+        'silhouette': silhouette,
+        'n_clusters': n_clusters
+    }
 
 
 def compute_linkage_matrix(X, method='ward'):
@@ -174,7 +184,9 @@ def compute_linkage_matrix(X, method='ward'):
     """
     # TODO: Implement this function
     # Hint: Use scipy.cluster.hierarchy.linkage
-    raise NotImplementedError("Implement compute_linkage_matrix()")
+    from scipy.cluster.hierarchy import linkage
+    Z = linkage(X, method=method)
+    return Z
 
 
 # =============================================================================
