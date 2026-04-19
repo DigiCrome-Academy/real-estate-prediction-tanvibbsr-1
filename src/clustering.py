@@ -55,9 +55,27 @@ def find_optimal_k(X, k_range=range(2, 11), random_state=42):
     #   1. For each k in k_range, fit KMeans and record inertia_
     #   2. Compute silhouette_score for each clustering
     #   3. Find the k with the highest silhouette score
-    raise NotImplementedError("Implement find_optimal_k()")
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
 
+    inertias = []
+    silhouette_scores = []
 
+    for k in k_range:
+        kmeans = KMeans(n_clusters=k, random_state=random_state)
+        labels = kmeans.fit_predict(X)
+        inertias.append(kmeans.inertia_)
+        silhouette_scores.append(silhouette_score(X, labels))
+
+    best_k_silhouette = list(k_range)[silhouette_scores.index(max(silhouette_scores))]
+
+    return {
+        'inertias': inertias,
+        'silhouette_scores': silhouette_scores,
+        'k_range': list(k_range),
+        'best_k_silhouette': best_k_silhouette
+    }
+    
 def perform_kmeans(X, n_clusters, random_state=42):
     """
     Perform K-Means clustering.
@@ -86,7 +104,23 @@ def perform_kmeans(X, n_clusters, random_state=42):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement perform_kmeans()")
+    # Hints:
+    #   1. Fit KMeans with n_clusters
+    #   2. Get labels, cluster centers, inertia
+    #   3. Compute silhouette score
+    kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
+    kmeans.fit(X)
+    labels = kmeans.labels_
+    centroids = kmeans.cluster_centers_
+    inertia = kmeans.inertia_
+    silhouette = silhouette_score(X, labels)
+    return {
+        'model': kmeans,
+        'labels': labels,
+        'centroids': centroids,
+        'inertia': inertia,
+        'silhouette': silhouette
+    }
 
 
 # =============================================================================

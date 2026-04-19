@@ -48,7 +48,9 @@ def build_linear_regression(X_train, y_train):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_linear_regression()")
+    model = LinearRegression().fit(X_train, y_train)
+    return model
+    
 
 
 def build_ridge_regression(X_train, y_train, alpha=1.0):
@@ -64,7 +66,8 @@ def build_ridge_regression(X_train, y_train, alpha=1.0):
         Ridge: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_ridge_regression()")
+    model = Ridge(alpha=alpha).fit(X_train, y_train)
+    return model
 
 
 def build_lasso_regression(X_train, y_train, alpha=1.0):
@@ -80,7 +83,8 @@ def build_lasso_regression(X_train, y_train, alpha=1.0):
         Lasso: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_lasso_regression()")
+    model = Lasso(alpha=alpha).fit(X_train, y_train)
+    return model
 
 
 def build_elasticnet_regression(X_train, y_train, alpha=1.0, l1_ratio=0.5):
@@ -97,7 +101,8 @@ def build_elasticnet_regression(X_train, y_train, alpha=1.0, l1_ratio=0.5):
         ElasticNet: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_elasticnet_regression()")
+    model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio).fit(X_train, y_train)
+    return model
 
 
 def build_polynomial_regression(X_train, y_train, degree=2):
@@ -131,7 +136,10 @@ def build_polynomial_regression(X_train, y_train, degree=2):
     #   2. Transform X_train using fit_transform
     #   3. Fit LinearRegression on the transformed features
     #   4. Return both the model and the transformer
-    raise NotImplementedError("Implement build_polynomial_regression()")
+    poly = PolynomialFeatures(degree=degree, include_bias=False)
+    X_train_poly = poly.fit_transform(X_train)
+    model = LinearRegression().fit(X_train_poly, y_train)
+    return model, poly
 
 
 def build_decision_tree(X_train, y_train, max_depth=10, random_state=42):
@@ -148,7 +156,8 @@ def build_decision_tree(X_train, y_train, max_depth=10, random_state=42):
         DecisionTreeRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_decision_tree()")
+    model = DecisionTreeRegressor(max_depth=max_depth, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_random_forest(X_train, y_train, n_estimators=100, max_depth=None, random_state=42):
@@ -166,7 +175,8 @@ def build_random_forest(X_train, y_train, n_estimators=100, max_depth=None, rand
         RandomForestRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_random_forest()")
+    model = RandomForestRegressor(n_estimators=n_estimators, max_depth=max_depth, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_gradient_boosting(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -184,7 +194,8 @@ def build_gradient_boosting(X_train, y_train, n_estimators=100, learning_rate=0.
         GradientBoostingRegressor: Fitted model.
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement build_gradient_boosting()")
+    model = GradientBoostingRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_xgboost(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -203,7 +214,9 @@ def build_xgboost(X_train, y_train, n_estimators=100, learning_rate=0.1, random_
     """
     # TODO: Implement this function
     # Hint: import xgboost as xgb; use xgb.XGBRegressor
-    raise NotImplementedError("Implement build_xgboost()")
+    import xgboost as xgb
+    model = xgb.XGBRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state).fit(X_train, y_train)
+    return model
 
 
 def build_lightgbm(X_train, y_train, n_estimators=100, learning_rate=0.1, random_state=42):
@@ -222,7 +235,9 @@ def build_lightgbm(X_train, y_train, n_estimators=100, learning_rate=0.1, random
     """
     # TODO: Implement this function
     # Hint: import lightgbm as lgb; use lgb.LGBMRegressor(verbose=-1)
-    raise NotImplementedError("Implement build_lightgbm()")
+    import lightgbm as lgb
+    model = lgb.LGBMRegressor(n_estimators=n_estimators, learning_rate=learning_rate, random_state=random_state, verbose=-1).fit(X_train, y_train)
+    return model
 
 
 # =============================================================================
@@ -257,7 +272,13 @@ def evaluate_model(model, X_test, y_test):
     #   1. Generate predictions using model.predict(X_test)
     #   2. Calculate MSE, RMSE (sqrt of MSE), MAE, and R²
     #   3. Return as a dictionary
-    raise NotImplementedError("Implement evaluate_model()")
+    model_predictions = model.predict(X_test)
+    mse = mean_squared_error(y_test,model_predictions)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_test,model_predictions)
+    r2 = r2_score(y_test,model_predictions)
+    return {'mse': mse, 'rmse': rmse, 'mae': mae, 'r2': r2}
+
 
 
 def compare_models(models_dict, X_test, y_test):
@@ -291,7 +312,23 @@ def compare_models(models_dict, X_test, y_test):
     #   1. Loop through models_dict
     #   2. Call evaluate_model for each
     #   3. Collect results into a DataFrame
-    raise NotImplementedError("Implement compare_models()")
+    from src.regression import evaluate_model
+    import pandas as pd
+
+    results = []
+    for model_name, model_or_tuple in models_dict.items():
+        if isinstance(model_or_tuple, tuple):
+            model, X = model_or_tuple
+        else:
+            model, X = model_or_tuple, X_test
+        
+        metrics = evaluate_model(model, X, y_test)
+        metrics['model'] = model_name
+        results.append(metrics)
+    
+    return pd.DataFrame(results).set_index('model')
+
+  
 
 
 def cross_validate_model(model, X, y, cv=5, scoring='neg_mean_squared_error'):
@@ -322,4 +359,10 @@ def cross_validate_model(model, X, y, cv=5, scoring='neg_mean_squared_error'):
     # Hints:
     #   1. Use cross_val_score from sklearn
     #   2. Return mean, std, and all individual fold scores
-    raise NotImplementedError("Implement cross_validate_model()")
+    scores = cross_val_score(model, X, y, cv=cv, scoring=scoring)
+    return {
+        'mean_score': np.mean(scores),
+        'std_score': np.std(scores),
+        'scores': scores
+    }
+

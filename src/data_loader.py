@@ -36,7 +36,12 @@ def load_housing_data():
     #   1. Use fetch_california_housing(as_frame=True)
     #   2. The target variable should be named 'MedHouseVal'
     #   3. Return a single DataFrame with features AND target combined
-    raise NotImplementedError("Implement load_housing_data()")
+
+    data = fetch_california_housing(as_frame=True)
+    df = data.frame
+    df.rename(columns={'MedHouseVal': 'MedHouseVal'}, inplace=True)  # Ensure target column is named correctly
+    return df
+    
 
 
 def preprocess_features(df, target_col='MedHouseVal'):
@@ -67,6 +72,13 @@ def preprocess_features(df, target_col='MedHouseVal'):
     #   1. Separate X (features) and y (target)
     #   2. Fit a StandardScaler on X
     #   3. Return the scaled X, y, feature names, and the scaler
+    separator = df.columns.get_loc(target_col)
+    X = df.iloc[:, :separator].values
+    y = df.iloc[:, separator].values
+    feature_names = df.columns[:separator].tolist()
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    return X_scaled, y, feature_names, scaler
     raise NotImplementedError("Implement preprocess_features()")
 
 
@@ -93,6 +105,9 @@ def split_data(X, y, test_size=0.2, random_state=42):
         True
     """
     # TODO: Implement this function
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    return X_train, X_test, y_train, y_test
+
     raise NotImplementedError("Implement split_data()")
 
 
@@ -128,7 +143,14 @@ def create_feature_engineering(df):
     #   1. Make a copy of df to avoid modifying the original
     #   2. Create the three new features described above
     #   3. Handle potential division by zero cases
-    raise NotImplementedError("Implement create_feature_engineering()")
+
+    df_eng = df.copy()
+    df_eng['rooms_per_household'] = df_eng['AveRooms'] * df_eng['AveOccup']
+    df_eng['bedrooms_ratio'] = df_eng['AveBedrms'] / df_eng['AveRooms'].replace(0, np.nan)
+    df_eng['population_density'] = df_eng['Population'] / df_eng['AveOccup'].replace(0, np.nan)
+    df_eng.fillna(0,inplace=True)
+    return df_eng
+   
 
 
 if __name__ == "__main__":
