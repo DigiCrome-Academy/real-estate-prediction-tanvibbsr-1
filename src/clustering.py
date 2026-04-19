@@ -225,7 +225,20 @@ def perform_dbscan(X, eps=0.5, min_samples=5):
     #   1. Fit DBSCAN on X
     #   2. Count unique labels (excluding -1 for noise)
     #   3. Only compute silhouette if there are >= 2 clusters
-    raise NotImplementedError("Implement perform_dbscan()")
+    from sklearn.cluster import DBSCAN
+    from sklearn.metrics import silhouette_score
+    model = DBSCAN(eps=eps, min_samples=min_samples)
+    labels = model.fit_predict(X)
+    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    n_noise = list(labels).count(-1)
+    silhouette = silhouette_score(X, labels) if n_clusters >= 2 else None
+    return {
+        'model': model,
+        'labels': labels,
+        'n_clusters': n_clusters,
+        'n_noise': n_noise,
+        'silhouette': silhouette
+    }
 
 
 def tune_dbscan(X, eps_range=None, min_samples_range=None):
@@ -251,7 +264,22 @@ def tune_dbscan(X, eps_range=None, min_samples_range=None):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement tune_dbscan()")
+    if eps_range is None:
+        eps_range = [0.3, 0.5, 0.7, 1.0, 1.5]
+    if min_samples_range is None:
+        min_samples_range = [3, 5, 7, 10]
+    results = []
+    for eps in eps_range:
+        for min_samples in min_samples_range:
+            dbscan_result = perform_dbscan(X, eps=eps, min_samples=min_samples)
+            results.append({
+                'eps': eps,
+                'min_samples': min_samples,
+                'n_clusters': dbscan_result['n_clusters'],
+                'n_noise': dbscan_result['n_noise'],
+                'silhouette': dbscan_result['silhouette']
+            })
+    return pd.DataFrame(results)
 
 
 # =============================================================================
