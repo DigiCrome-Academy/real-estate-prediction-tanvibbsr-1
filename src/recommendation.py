@@ -344,7 +344,28 @@ def hybrid_recommend(
     #   3. Normalize both score sets to [0, 1]
     #   4. Combine: hybrid = content_weight * content + collaborative_weight * collab
     #   5. Return top-n by hybrid_score
-    raise NotImplementedError("Implement hybrid_recommend()")
+    content_sim = compute_property_similarity(property_features, metric='cosine')[property_index]
+    collab_recs = user_based_collaborative_filter(user_property_matrix, user_index, n_recommendations=len(content_sim))
+    collab_scores = np.zeros_like(content_sim)
+    for rec in collab_recs:
+        collab_scores[rec['property_index']] = rec['predicted_rating']
+    # Normalize scores
+    content_scores_norm = (content_sim - np.min(content_sim)) / (np.max(content_sim) - np.min(content_sim) + 1e-8)
+    collab_scores_norm = (collab_scores - np.min(collab_scores)) / (np.max(collab_scores) - np.min(collab_scores) + 1e-8)
+    # Combine scores
+    hybrid_scores = content_weight * content_scores_norm + collaborative_weight * collab_scores_norm
+    recommendations = []
+    for idx in range(len(hybrid_scores)):
+        if idx != property_index:  # Exclude the reference property
+            recommendations.append({
+                'property_index': idx,
+                'content_score': content_scores_norm[idx],
+                'collaborative_score': collab_scores_norm[idx],
+                'hybrid_score': hybrid_scores[idx]
+            })
+    recommendations.sort(key=lambda x: x['hybrid_score'], reverse=True)
+    return recommendations[:n_recommendations]
+    
 
 
 def evaluate_recommendations(recommendations, ground_truth_ratings, threshold=3.5):
@@ -375,4 +396,20 @@ def evaluate_recommendations(recommendations, ground_truth_ratings, threshold=3.
         0.6666666666666666
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement evaluate_recommendations()")
+    relevant_recommended = 0
+    recommended = len(recommendations)
+    relevant_total = sum(1 for rating in ground_truth_ratings.values() if rating >= threshold)
+    for rec in recommendations:
+        prop_idx = rec['property_index']
+        if ground_truth_ratings.get(prop_idx, 0) >= threshold:
+            relevant_recommended += 1
+    precision = relevant_recommended / recommended if recommended > 0 else 0
+    recall = relevant_recommended / relevant_total if relevant_total > 0 else 0
+    return {
+        'precision': precision,
+        'recall': recall,
+        'n_relevant_recommended': relevant_recommended,
+        'n_recommended': recommended,
+        'n_relevant_total': relevant_total
+    }
+
