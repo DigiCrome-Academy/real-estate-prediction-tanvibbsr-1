@@ -178,7 +178,12 @@ def create_user_property_matrix(n_users=100, n_properties=500, sparsity=0.95, ra
     #   1. Generate random ratings (1-5) for all entries
     #   2. Create a mask where ~sparsity fraction of entries are kept
     #   3. Set the rest to 0
-    raise NotImplementedError("Implement create_user_property_matrix()")
+    random_state = np.random.RandomState(random_state)
+    ratings = random_state.randint(1, 6, size=(n_users, n_properties))  # Ratings between 1 and 5
+    mask = random_state.rand(n_users, n_properties) < (1 - sparsity)
+    user_property_matrix = ratings * mask  # Set unrated entries to 0
+    return user_property_matrix
+   
 
 
 def user_based_collaborative_filter(user_property_matrix, user_index, n_recommendations=5):
@@ -217,7 +222,26 @@ def user_based_collaborative_filter(user_property_matrix, user_index, n_recommen
     #   2. Find top-k similar users (e.g., top 10)
     #   3. For unrated properties of target user, compute weighted average rating
     #   4. Return top-n properties by predicted rating
-    raise NotImplementedError("Implement user_based_collaborative_filter()")
+    sim_matrix = cosine_similarity(user_property_matrix)
+    user_similarities = sim_matrix[user_index]
+    #Find top-k similar users (excluding the user itself)
+    k = 10
+    similar_users_indices = np.argsort(user_similarities)[::-1][1:k+1]
+    # Get unrated properties for the target user
+    unrated_properties = np.where(user_property_matrix[user_index] == 0)[0]
+    predicted_ratings = []
+    for prop in unrated_properties:
+        # Get ratings for this property from similar users
+        ratings = user_property_matrix[similar_users_indices, prop]
+        similarities = user_similarities[similar_users_indices]
+        # Compute weighted average rating
+        if np.sum(similarities) > 0:
+            predicted_rating = np.dot(similarities, ratings) / np.sum(similarities)
+            predicted_ratings.append({'property_index': prop, 'predicted_rating': predicted_rating})
+    # Sort by predicted rating
+    predicted_ratings.sort(key=lambda x: x['predicted_rating'], reverse=True)
+    return predicted_ratings[:n_recommendations]
+
 
 
 def item_based_collaborative_filter(user_property_matrix, user_index, n_recommendations=5):
@@ -248,6 +272,10 @@ def item_based_collaborative_filter(user_property_matrix, user_index, n_recommen
         True
     """
     # TODO: Implement this function
+    item = user_property_matrix.T  # Transpose to get item-user matrix
+    item_similarity = cosine_similarity(item)
+    return content_based_recommend(property_index=user_index, similarity_matrix=item_similarity, n_recommendations=n_recommendations)
+
     raise NotImplementedError("Implement item_based_collaborative_filter()")
 
 
