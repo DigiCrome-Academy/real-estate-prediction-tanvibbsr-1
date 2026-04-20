@@ -272,11 +272,26 @@ def item_based_collaborative_filter(user_property_matrix, user_index, n_recommen
         True
     """
     # TODO: Implement this function
-    item = user_property_matrix.T  # Transpose to get item-user matrix
-    item_similarity = cosine_similarity(item)
-    return content_based_recommend(property_index=user_index, similarity_matrix=item_similarity, n_recommendations=n_recommendations)
+    item = user_property_matrix.T  # shape: (n_properties, n_users)
+    item_similarity = cosine_similarity(item)  # shape: (n_properties, n_properties)
 
-    raise NotImplementedError("Implement item_based_collaborative_filter()")
+    user_ratings = user_property_matrix[user_index]  # shape: (n_properties,)
+    rated_properties = np.where(user_ratings > 0)[0]
+    unrated_properties = np.where(user_ratings == 0)[0]
+
+    predicted_ratings = []
+    for prop in unrated_properties:
+        # Similarity between this unrated property and all rated properties
+        similarities = item_similarity[prop, rated_properties]
+        ratings = user_ratings[rated_properties].astype(float)
+
+        if np.sum(np.abs(similarities)) > 0:
+            predicted_rating = np.dot(similarities, ratings) / np.sum(np.abs(similarities))
+            predicted_ratings.append({'property_index': int(prop), 'predicted_rating': predicted_rating})
+
+    predicted_ratings.sort(key=lambda x: x['predicted_rating'], reverse=True)
+    return predicted_ratings[:n_recommendations]
+   
 
 
 # =============================================================================
