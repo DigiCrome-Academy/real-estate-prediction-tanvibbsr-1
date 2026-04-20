@@ -46,7 +46,18 @@ def compute_property_similarity(X, metric='cosine'):
     #   - For 'euclidean': use euclidean_distances, then convert to similarity
     #     (e.g., 1 / (1 + distance))
     #   - Ensure all values are between 0 and 1
-    raise NotImplementedError("Implement compute_property_similarity()")
+    cosine_similarity = cosine_similarity(X)
+    euclidean_distances = euclidean_distances(X)
+    if metric == 'cosine':
+        return cosine_similarity
+    elif metric == 'euclidean':
+        # Convert distances to similarities
+        similarity = 1 / (1 + euclidean_distances)
+        return similarity
+    else:
+        raise ValueError("Invalid metric. Use 'cosine' or 'euclidean'.")
+    
+
 
 
 def content_based_recommend(property_index, similarity_matrix, n_recommendations=5):
@@ -83,7 +94,17 @@ def content_based_recommend(property_index, similarity_matrix, n_recommendations
     #   2. Sort by descending similarity
     #   3. Exclude the query property itself
     #   4. Return top n_recommendations
-    raise NotImplementedError("Implement content_based_recommend()")
+    similarity_scores = similarity_matrix[property_index]
+    # Sort indices by descending similarity scores
+    sorted_indices = np.argsort(similarity_scores)[::-1]
+    # Exclude the query property itself
+    sorted_indices = sorted_indices[sorted_indices != property_index]
+    # Return top n_recommendations
+    recommendations = [
+        {'property_index': idx, 'similarity_score': similarity_scores[idx]}
+        for idx in sorted_indices[:n_recommendations]
+    ]
+    return recommendations
 
 
 def knn_recommend(X, property_index, n_recommendations=5, metric='minkowski'):
@@ -114,7 +135,15 @@ def knn_recommend(X, property_index, n_recommendations=5, metric='minkowski'):
     #   1. Fit NearestNeighbors with n_neighbors = n_recommendations + 1
     #   2. Query for the property at property_index
     #   3. Exclude the query property from results
-    raise NotImplementedError("Implement knn_recommend()")
+    n_neighbors = n_recommendations + 1  # +1 to account for the query property itself
+    knn = NearestNeighbors(n_neighbors=n_neighbors, metric=metric)
+    knn.fit(X)
+    distances, indices = knn.kneighbors(X[property_index].reshape(1, -1))
+    # Exclude the query property itself 
+    recommendations = []
+    for idx, dist in zip(indices[0][1:], distances[0][1:]):
+        recommendations.append({'property_index': idx, 'distance': dist})
+    return recommendations
 
 
 # =============================================================================
