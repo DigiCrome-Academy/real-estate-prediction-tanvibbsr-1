@@ -46,14 +46,11 @@ def compute_property_similarity(X, metric='cosine'):
     #   - For 'euclidean': use euclidean_distances, then convert to similarity
     #     (e.g., 1 / (1 + distance))
     #   - Ensure all values are between 0 and 1
-    cosine_similarity = cosine_similarity(X)
-    euclidean_distances = euclidean_distances(X)
     if metric == 'cosine':
-        return cosine_similarity
+        return cosine_similarity(X)
     elif metric == 'euclidean':
-        # Convert distances to similarities
-        similarity = 1 / (1 + euclidean_distances)
-        return similarity
+        dist_matrix = euclidean_distances(X)
+        return 1 / (1 + dist_matrix)
     else:
         raise ValueError("Invalid metric. Use 'cosine' or 'euclidean'.")
     
