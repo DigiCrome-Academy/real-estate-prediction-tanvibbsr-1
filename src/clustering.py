@@ -359,8 +359,16 @@ def find_optimal_components(X, variance_threshold=0.95):
     pca = PCA()
     pca.fit(X)
     cumulative_variance = np.cumsum(pca.explained_variance_ratio_)
-    n_components = np.argmax(cumulative_variance >= variance_threshold) + 1
-    return n_components
+    
+    # Find first index where cumulative variance meets threshold
+    indices = np.where(cumulative_variance >= variance_threshold)[0]
+    
+    # If threshold is never reached,
+    # return all components
+    if len(indices) == 0:
+        return len(cumulative_variance)
+    
+    return int(indices[0]) + 1
 
 
 
