@@ -161,7 +161,16 @@ def build_stacking_ensemble(X_train, y_train, base_models=None, meta_model=None)
     #   2. If meta_model is None, use LinearRegression()
     #   3. Create StackingRegressor(estimators=base_models, final_estimator=meta_model, cv=5)
     #   4. Fit on training data
-    raise NotImplementedError("Implement build_stacking_ensemble()")
+    if base_models is None:
+        base_models = [
+            ('ridge', Ridge(alpha=1.0)),
+            ('rf', RandomForestRegressor(n_estimators=100, random_state=42)),
+            ('gb', GradientBoostingRegressor(n_estimators=100, random_state=42))
+        ]
+    if meta_model is None:
+        meta_model = LinearRegression()
+    return StackingRegressor(estimators=base_models, final_estimator=meta_model, cv=5, n_jobs=-1).fit(X_train, y_train)
+    
 
 
 def evaluate_stacking_vs_voting(X_train, y_train, X_test, y_test):
@@ -186,7 +195,38 @@ def evaluate_stacking_vs_voting(X_train, y_train, X_test, y_test):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement evaluate_stacking_vs_voting()")
+    models = [
+        ('ridge', Ridge(alpha=1.0)),
+        ('rf', RandomForestRegressor(n_estimators=100, random_state=42)),
+        ('gb', GradientBoostingRegressor(n_estimators=100, random_state=42))
+    ]
+    # Evaluate individual models
+    results = []
+    for name, model in models:
+        model.fit(X_train, y_train)
+        preds = model.predict(X_test)
+        mse = mean_squared_error(y_test, preds)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_test, preds)
+        results.append({'model': name, 'mse': mse, 'rmse': rmse, 'r2': r2})
+
+    # Evaluate voting ensemble
+    voting_ensemble = build_voting_ensemble(X_train, y_train, models)
+    preds = voting_ensemble.predict(X_test)
+    mse = mean_squared_error(y_test, preds)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test, preds)
+    results.append({'model': 'VotingEnsemble', 'mse': mse, 'rmse': rmse, 'r2': r2})
+
+    # Evaluate stacking ensemble
+    stacking_ensemble = build_stacking_ensemble(X_train, y_train, models)
+    preds = stacking_ensemble.predict(X_test)
+    mse = mean_squared_error(y_test, preds)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test, preds)
+    results.append({'model': 'StackingEnsemble', 'mse': mse, 'rmse': rmse, 'r2': r2})
+    return pd.DataFrame(results)
+   
 
 
 # =============================================================================
@@ -213,7 +253,11 @@ def save_model(model, filepath):
         True
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement save_model()")
+    save_path = filepath if filepath.endswith('.joblib') else f"{filepath}.joblib"
+    joblib.dump(model, save_path)
+    return save_path
+
+    
 
 
 def load_model(filepath):
@@ -236,4 +280,5 @@ def load_model(filepath):
         array([4.])
     """
     # TODO: Implement this function
-    raise NotImplementedError("Implement load_model()")
+    return joblib.load(filepath)
+
