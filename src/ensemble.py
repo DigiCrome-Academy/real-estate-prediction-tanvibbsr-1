@@ -60,7 +60,15 @@ def build_voting_ensemble(X_train, y_train, models=None):
     #   1. If models is None, create the default list of estimators
     #   2. Create a VotingRegressor with the estimators
     #   3. Fit on the training data
-    raise NotImplementedError("Implement build_voting_ensemble()")
+    if models is None:
+        models = [
+            ('ridge', Ridge(alpha=1.0)),
+            ('rf', RandomForestRegressor(n_estimators=100, random_state=42)),
+            ('gb', GradientBoostingRegressor(n_estimators=100, random_state=42))
+        ]
+    return VotingRegressor(estimators=models, n_jobs=-1).fit(X_train, y_train)
+
+ 
 
 
 def evaluate_voting_vs_individual(X_train, y_train, X_test, y_test, models=None):
@@ -90,7 +98,30 @@ def evaluate_voting_vs_individual(X_train, y_train, X_test, y_test, models=None)
     #   1. Train each individual model and evaluate on test set
     #   2. Train the voting ensemble and evaluate on test set
     #   3. Collect all results into a DataFrame
-    raise NotImplementedError("Implement evaluate_voting_vs_individual()")
+    if models is None:
+        models = [
+            ('ridge', Ridge(alpha=1.0)),
+            ('rf', RandomForestRegressor(n_estimators=100, random_state=42)),
+            ('gb', GradientBoostingRegressor(n_estimators=100, random_state=42))
+        ]
+    results = []
+    for name, model in models:
+        model.fit(X_train, y_train)
+        preds = model.predict(X_test)
+        mse = mean_squared_error(y_test, preds)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(y_test, preds)
+        results.append({'model': name, 'mse': mse, 'rmse': rmse, 'r2': r2})
+
+    # Train the voting ensemble
+    voting_ensemble = build_voting_ensemble(X_train, y_train, models)
+    preds = voting_ensemble.predict(X_test)
+    mse = mean_squared_error(y_test, preds)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(y_test, preds)
+    results.append({'model': 'VotingEnsemble', 'mse': mse, 'rmse': rmse, 'r2': r2})
+
+    return pd.DataFrame(results)
 
 
 # =============================================================================
